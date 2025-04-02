@@ -1,0 +1,75 @@
+private void backprop_cel(double[] labels, double[] input, double learningRate) 
+	{
+	    int layerCount = perceptron.length;
+	    t++;
+
+	    Fehler[layerCount - 1] = new double[perceptron[layerCount - 1]];
+	    for (int i = 0; i < perceptron[layerCount - 1]; i++) {
+	        double diff = (AusgabeWerte[layerCount - 1][i] - labels[i]) * reluAbleitung(AusgabeWerte[layerCount - 1][i]);
+	        Fehler[layerCount - 1][i] = diff;
+	    }
+
+	    for (int layer = layerCount - 2; layer >= 0; layer--) {
+	        Fehler[layer] = new double[perceptron[layer]];
+
+	        for (int n = 0; n < perceptron[layer]; n++) {
+	            double sumError = 0.0;
+	            for (int nn = 0; nn < perceptron[layer + 1]; nn++) {
+	                sumError += Fehler[layer + 1][nn] * gewicht[layer + 1][nn][n];
+	            }
+	            sumError *= reluAbleitung(AusgabeWerte[layer][n]);
+	            Fehler[layer][n] = sumError; 
+	        }
+	    }
+
+	    for (int layer = 0; layer < layerCount; layer++) {
+	        for (int p = 0; p < perceptron[layer]; p++) {
+	            for (int w_ = 0; w_ < gewicht[layer][p].length; w_++) {
+	                double eingabeWert = (layer == 0) ? input[w_] : AusgabeWerte[layer - 1][w_];
+	                double grad = Fehler[layer][p] * eingabeWert;
+
+	                m[layer][p][w_] = beta1 * m[layer][p][w_] + (1 - beta1) * grad;
+	                v[layer][p][w_] = beta2 * v[layer][p][w_] + (1 - beta2) * (grad * grad);
+
+	                double m_hat = m[layer][p][w_] / (1 - Math.pow(beta1, t));
+	                double v_hat = v[layer][p][w_] / (1 - Math.pow(beta2, t));
+
+	                gewicht[layer][p][w_] -= learningRate * (m_hat / (Math.sqrt(v_hat) + epsilon));
+	            }
+	        }
+	    }
+	}
+	
+	
+	public void forwardPass(double[] input, boolean ausgabe) 
+	{
+	    AusgabeWerte = new double[perceptron.length][];
+	    AusgabeWerte[0] = new double[perceptron[0]];
+	    for (int p = 0; p < perceptron[0]; p++) {
+	        double summe = 0.0;
+	        for (int w = 0; w < gewicht[0][p].length; w++) {
+	            double eingabeWert = input[w];
+	            summe += eingabeWert * gewicht[0][p][w];
+	        }
+	        AusgabeWerte[0][p] = relu(summe);
+	    }
+	    
+	    for (int layer = 1; layer < perceptron.length; layer++) {
+	        AusgabeWerte[layer] = new double[perceptron[layer]];
+	        for (int p = 0; p < perceptron[layer]; p++) {
+	            double summe = 0.0;
+	            for (int w = 0; w < gewicht[layer][p].length; w++) {
+	                double eingabeWert = AusgabeWerte[layer - 1][w];
+	                summe += eingabeWert * gewicht[layer][p][w];
+	            }
+	            AusgabeWerte[layer][p] = relu(summe);
+	        }
+	    }
+
+	    if (ausgabe) {
+		    System.out.println("Ausgaben des letzten Layers:");
+		    for (int i = 0; i < AusgabeWerte[perceptron.length - 1].length; i++) {
+		        System.out.println("Perzeptron " + i + ": " + AusgabeWerte[perceptron.length - 1][i]);
+		    }
+	    }
+	}
