@@ -1,0 +1,128 @@
+package argus_ai;
+
+// Benötigte Imports
+import java.io.File; // 'File': Repräsentiert einen Datei- oder Ordnerpfad.
+import org.jfree.chart.ChartFactory; // 'ChartFactory': Erstellt Diagramme.
+import org.jfree.chart.ChartUtils; // 'ChartUtils': Enthält Methoden zum Speichern von Diagrammen.
+import org.jfree.chart.ChartPanel; // 'ChartPanel': Zeigt das Diagramm in einem Swing-Panel an.
+import org.jfree.chart.JFreeChart; // 'JFreeChart': Repräsentiert das erstellte Diagramm.
+import org.jfree.data.xy.XYSeries; // 'XYSeries': Speichert (x,y)-Datenpunkte.
+import org.jfree.data.xy.XYSeriesCollection; // 'XYSeriesCollection': Eine Sammlung von XYSeries.
+import javax.swing.JFrame; // 'JFrame': Erzeugt ein Fenster zur Anzeige.
+import javax.swing.JLabel; // 'JLabel': Zeigt Text in Swing an.
+import javax.swing.JPanel; // 'JPanel': Container, um Komponenten anzuordnen.
+import java.awt.BorderLayout; // 'BorderLayout': Layoutmanager für die Anordnung der Komponenten.
+import org.jfree.chart.plot.XYPlot; // 'XYPlot': Repräsentiert den Plot mit Achsen und Daten.
+import org.jfree.chart.axis.NumberAxis; // 'NumberAxis': Stellt eine numerische Achse dar.
+
+public class Plotter {
+
+    // 'series': Speichert alle (x,y)-Datenpunkte, die geplottet werden.
+    private XYSeries series;
+    // 'dataset': Fasst die Datenserien zusammen und wird für das Diagramm benötigt.
+    private XYSeriesCollection dataset;
+    // 'chart': Repräsentiert das erstellte Liniendiagramm.
+    private JFreeChart chart;
+    // 'chartPanel': Zeigt das Diagramm in einem Swing-Panel an.
+    private ChartPanel chartPanel;
+    // 'currentYLabel': Zeigt den aktuellen y-Wert an.
+    private JLabel currentYLabel;
+
+    /**
+     * Konstruktor: Erstellt einen neuen Plotter.
+     * @param chartTitle (String): Titel des Diagramms.
+     * @param xAxisLabel (String): Beschriftung der X-Achse.
+     * @param yAxisLabel (String): Beschriftung der Y-Achse.
+     */
+    public Plotter(String chartTitle, String xAxisLabel, String yAxisLabel) {
+        series = new XYSeries("Daten"); // 'Daten': Name der Datenserie.
+        dataset = new XYSeriesCollection(series); // 'dataset': Enthält die Serie.
+        chart = ChartFactory.createXYLineChart(chartTitle, xAxisLabel, yAxisLabel, dataset);
+    }
+
+    /**
+     * Update-Methode: Fügt einen neuen Punkt zum Diagramm hinzu und aktualisiert das Label mit dem aktuellen y-Wert.
+     * @param x (double): Die x-Koordinate des neuen Punktes.
+     * @param y (double): Die y-Koordinate des neuen Punktes.
+     */
+    public void update(double x, double y) {
+        series.add(x, y); // Fügt den Punkt (x,y) zur Datenserie hinzu.
+        if (currentYLabel != null) { // 'currentYLabel' zeigt den aktuellen y-Wert an.
+            currentYLabel.setText("Aktueller Y-Wert: " + y); // Aktualisiert das Label.
+        }
+    }
+
+    /**
+     * Speichert das aktuelle Diagramm als PNG-Datei.
+     * @param folderPath (String): Ordnerpfad, in dem die Datei gespeichert wird.
+     * @param fileName (String): Dateiname (z.B. "plot.png").
+     * @param width (int): Breite des gespeicherten Bildes.
+     * @param height (int): Höhe des gespeicherten Bildes.
+     * @throws Exception: Falls beim Speichern ein Fehler auftritt.
+     */
+    public void savePlot(String folderPath, String fileName, int width, int height) throws Exception {
+        File file = new File(folderPath + File.separator + fileName);
+        ChartUtils.saveChartAsPNG(file, chart, width, height);
+    }
+
+    /**
+     * Zeigt das Diagramm in einem Swing-Fenster an (Live-Anzeige) mit einem Label, das den aktuellen y-Wert anzeigt.
+     * Keine Eingabevariablen.
+     * Ausgabe: Öffnet ein Fenster (JFrame) mit eingebettetem ChartPanel und einem Label.
+     */
+    public void displayLivePlot() {
+        JFrame frame = new JFrame("Live Chart"); // 'Live Chart': Fenstertitel.
+        chartPanel = new ChartPanel(chart); // 'chartPanel': Panel, das das Diagramm anzeigt.
+        currentYLabel = new JLabel("Aktueller Y-Wert: -"); // 'currentYLabel': Initialisiert mit Platzhaltertext.
+
+        // Erstelle ein Panel zur Anordnung der Komponenten.
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(chartPanel, BorderLayout.CENTER); // ChartPanel in der Mitte.
+        mainPanel.add(currentYLabel, BorderLayout.SOUTH); // Label unten.
+
+        frame.setContentPane(mainPanel); // Setzt 'mainPanel' als Inhalt des Fensters.
+        frame.setSize(800, 600); // Fenstergröße: 800 Pixel breit, 600 Pixel hoch.
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Beendet das Programm beim Schließen.
+        frame.setVisible(true); // Zeigt das Fenster an.
+    }
+    
+    /**
+     * Setzt den Bereich der X-Achse (Domain-Achse) auf die angegebenen Werte.
+     * @param lowerBound (double): Unterer Grenzwert der X-Achse.
+     * @param upperBound (double): Oberer Grenzwert der X-Achse.
+     * Ausgabe: Die X-Achse des Diagramms wird auf den Bereich [lowerBound, upperBound] festgelegt.
+     */
+    public void setXRange(double lowerBound, double upperBound) {
+        XYPlot plot = chart.getXYPlot(); // 'plot': Das XYPlot-Objekt, das die Achsen enthält.
+        NumberAxis xAxis = (NumberAxis) plot.getDomainAxis(); // 'xAxis': Die X-Achse als NumberAxis.
+        xAxis.setRange(lowerBound, upperBound); // Setzt den Bereich der X-Achse.
+    }
+
+    /**
+     * Getter für das Diagramm.
+     * @return (JFreeChart): Das erstellte Diagramm.
+     */
+    public JFreeChart getChart() {
+        return chart;
+    }
+
+    /**
+     * Getter für das Dataset.
+     * @return (XYSeriesCollection): Die Sammlung der (x,y)-Datenpunkte.
+     */
+    public XYSeriesCollection getDataset() {
+        return dataset;
+    }
+    
+    /**
+     * Setzt den Bereich der Y-Achse (Range-Achse) auf die angegebenen Werte.
+     * @param lowerBound (double): Unterer Grenzwert der Y-Achse.
+     * @param upperBound (double): Oberer Grenzwert der Y-Achse.
+     * Ausgabe: Die Y-Achse des Diagramms wird auf den Bereich [lowerBound, upperBound] festgelegt.
+     */
+    public void setYRange(double lowerBound, double upperBound) {
+        XYPlot plot = chart.getXYPlot(); // 'plot': Das XYPlot-Objekt, das die Achsen enthält.
+        NumberAxis yAxis = (NumberAxis) plot.getRangeAxis(); // 'yAxis': Die Y-Achse als NumberAxis.
+        yAxis.setRange(lowerBound, upperBound); // Setzt den Bereich der Y-Achse.
+    }
+}

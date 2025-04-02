@@ -1,0 +1,20 @@
+package argus_ai;
+
+public class mainXor {
+
+	public static void main(String[] args) throws Exception {
+		
+		double[][] eingaben = {{0,0},{1,0},{0,1},{1,1}};
+		double[][] soll = {{0},{1},{1},{0}};
+		int[] array = {2,2,1};
+		
+		defnet net = new defnet();
+		
+		net.init(array ,2);
+		net.backprop(soll, eingaben, 0.1, 100, 1000);
+		net.ausgabeTerminal(eingaben);
+		//net.gewichtsausgabe();	
+		
+	}
+
+}

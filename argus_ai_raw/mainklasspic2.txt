@@ -1,0 +1,74 @@
+package argus_ai;
+
+import java.util.Scanner;
+
+public class mainklasspic2 {
+
+	public static void main(String[] args) throws Exception {
+		
+		Scanner scanner = new Scanner(System.in);
+		
+		String pfad = "C:\\Users\\felix\\eclipse-workspace\\argus_ai\\src\\jnist dataset";
+		
+		String[] eingaben = defnet.getFilePaths(pfad);
+		String[] classification = {"0","1","2","3","4","5","6","7","8","9"};
+		int[] array = {75,75,10};
+		boolean found = false;
+		boolean state_a = true;
+		
+		defnet net = new defnet();
+		
+		System.out.print("load or lernig: ");
+		String scan = scanner.nextLine();
+		
+		if (scan.equals("load")) {
+			while(true) {
+				System.out.print("model name or exit: ");
+				scan = scanner.nextLine();
+				boolean filepresent = defnet.isFilePresent("C:\\Users\\felix\\eclipse-workspace\\argus_ai\\modele\\", scan+".mmd");
+				found=filepresent;
+				if(filepresent) {
+					net.init(scan);
+					System.out.println("Network load done");
+					break;
+				}
+				else if (scan.equals("exit")) {
+					state_a=false;
+					break;
+				}
+				else {
+					System.out.println("file not found");
+				}
+			}
+		}
+		else {	
+			state_a=true;
+			net.init(array ,784);
+			net.LabelEncoder(classification);
+			System.out.println("Network init done");	
+			net.backprop_picture(eingaben,0.001,100,200,true,true, 28, 28);
+		}
+		
+		while(state_a) {
+			
+			System.out.print("Enter file name or exit: ");
+			scan = scanner.nextLine();
+			
+			if (scan.equals("exit")) {
+				break;
+			}
+			
+			double[] netout = net.classifyImage(pfad+"\\"+scan+".png", 28, 28, false);			
+			net.identifiziereJaNein(netout);
+				
+			if(found==false) {
+				System.out.print("file name: ");
+				scan = scanner.nextLine();
+				net.saveModel(false, scan);
+			}
+		
+		}
+
+	}
+
+}

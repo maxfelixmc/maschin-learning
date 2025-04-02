@@ -1,0 +1,43 @@
+package argus_ai;
+
+public class mainklasspic {
+
+	public static void main(String[] args) throws Exception {
+		
+		String pfad = "C:\\Users\\felix\\eclipse-workspace\\argus_ai\\src\\shaps";
+		
+		String[] eingaben = defnet.getFilePaths(pfad);
+		String[] classification = {"kreis","quadrat"};
+		int[] array = {50,50,2};
+		
+		defnet net = new defnet();
+		
+		boolean filepresent = defnet.isFilePresent("C:\\Users\\felix\\eclipse-workspace\\argus_ai\\modele", "\\model.mmd");
+		
+		if(filepresent) {
+			net.init("model");
+			System.out.println("Network load done");
+		}
+		else {	
+			net.init(array ,2500);
+			net.LabelEncoder(classification);
+			System.out.println("Network init done");	
+			net.backprop_picture(eingaben,0.005,100,100,true,false, 50, 50);
+		}
+		
+		
+		double[] netout = net.classifyImage(pfad+"\\kreis1.png", 50, 50, false);
+		double[] netout2 = net.classifyImage(pfad+"\\quadrat1.png", 50, 50, false);
+		
+		//net.printBinaryArrayAsChars(net.loadAndResizeImageAsGrayOneDim("C:\\Users\\felix\\eclipse-workspace\\argus_ai\\src\\shaps\\kreis1.png", 50, 50), 50);
+		net.identifiziereJaNein(netout);
+		//net.printBinaryArrayAsChars(net.loadAndResizeImageAsGrayOneDim("C:\\Users\\felix\\eclipse-workspace\\argus_ai\\src\\shaps\\quadrat1.png", 50, 50), 50);
+		net.identifiziereJaNein(netout2);
+		
+		if(filepresent==false) {
+			net.saveModel(false, "model");
+		}
+
+	}
+
+}
